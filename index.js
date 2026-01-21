@@ -2,12 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const app = express();
-app.use(cors()); 
+
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
 app.use(express.json());
 
 // Чтобы по ссылке открывалась проверка связи 
 app.get('/', (req, res) => { 
     res.send('✅ Server is Running!'); 
+});
+
+// GET route for testing auth status
+app.get('/check-auth/:sessionId', (req, res) => {
+    res.json({ status: 'approved' });
 });
 
 // Логика для кнопки в Telegram 
