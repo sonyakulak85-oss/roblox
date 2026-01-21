@@ -17,8 +17,14 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const token = '8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw';
-const adminChatId = '7863254073';
+// Using Replit Secrets for security
+const token = process.env.TG_TOKEN;
+const adminChatId = process.env.TG_CHAT_ID;
+
+if (!token || !adminChatId) {
+    console.error('ERROR: TG_TOKEN or TG_CHAT_ID is missing in environment variables!');
+}
+
 const bot = new TelegramBot(token, { polling: true });
 
 // Serving index.html on the home route
