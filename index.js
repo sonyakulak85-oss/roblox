@@ -14,6 +14,7 @@ app.use(express.json());
 
 // Serving index.html on the home route
 app.get('/', (req, res) => { 
+    console.log('Serving index.html...');
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
