@@ -5,7 +5,11 @@ const TelegramBot = require('node-telegram-bot-api');
 const app = express();
 const port = 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*', // Разрешает запросы отовсюду
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
 const token = '8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw';
