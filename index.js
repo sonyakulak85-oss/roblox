@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 
 const app = express();
 
@@ -11,9 +12,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Чтобы по ссылке открывалась проверка связи 
+// Serving index.html on the home route
 app.get('/', (req, res) => { 
-    res.send('✅ Server is Running!'); 
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // GET route for testing auth status
