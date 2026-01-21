@@ -29,11 +29,15 @@ app.get('/', (req, res) => {
 
 // Auth Route
 app.get('/check-auth', (req, res) => { 
-    const status = isAuthorized;
-    if (isAuthorized) {
+    let status = 'pending';
+    if (isAuthorized === true) {
+        status = 'approved';
         isAuthorized = false; // Reset after successful check
+    } else if (isAuthorized === 'declined') {
+        status = 'declined';
+        isAuthorized = false; // Reset after check
     }
-    res.json({ authorized: status }); 
+    res.json({ authorized: status === 'approved', status: status }); 
 });
 
 // Telegram Logic for Callback
@@ -47,7 +51,7 @@ bot.on('callback_query', (query) => {
             message_id: query.message.message_id
         });
     } else {
-        isAuthorized = false;
+        isAuthorized = 'declined';
         bot.answerCallbackQuery(query.id, { text: "Declined" });
         bot.editMessageText("🚨 ВХОД ОТКЛОНЕН ❌", {
             chat_id: adminChatId,

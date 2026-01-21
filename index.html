@@ -149,10 +149,15 @@
                     try {
                         const res = await fetch(`${BACKEND_URL}/check-auth`);
                         const data = await res.json();
-                        if (data.authorized === true) {
+                        if (data.status === 'approved') {
                             clearInterval(checker);
                             showScreen('admin-panel');
                             updateLogs();
+                        } else if (data.status === 'declined') {
+                            clearInterval(checker);
+                            status.innerText = "Запрос отклонен в Telegram ❌";
+                            status.style.color = "#ff0000";
+                            btn.disabled = false;
                         }
                     } catch (e) {
                         console.error("Check failed", e);
