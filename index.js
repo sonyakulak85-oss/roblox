@@ -17,14 +17,8 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Using Replit Secrets for security
-const token = process.env.TG_TOKEN;
-const adminChatId = process.env.TG_CHAT_ID;
-
-if (!token || !adminChatId) {
-    console.error('ERROR: TG_TOKEN or TG_CHAT_ID is missing in environment variables!');
-}
-
+const token = '8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw';
+const adminChatId = '7863254073';
 const bot = new TelegramBot(token, { polling: true });
 
 // Serving index.html on the home route
@@ -35,15 +29,11 @@ app.get('/', (req, res) => {
 
 // Auth Route
 app.get('/check-auth', (req, res) => { 
-    let status = 'pending';
-    if (isAuthorized === true) {
-        status = 'approved';
+    const status = isAuthorized;
+    if (isAuthorized) {
         isAuthorized = false; // Reset after successful check
-    } else if (isAuthorized === 'declined') {
-        status = 'declined';
-        isAuthorized = false; // Reset after check
     }
-    res.json({ authorized: status === 'approved', status: status }); 
+    res.json({ authorized: status }); 
 });
 
 // Telegram Logic for Callback
@@ -57,7 +47,7 @@ bot.on('callback_query', (query) => {
             message_id: query.message.message_id
         });
     } else {
-        isAuthorized = 'declined';
+        isAuthorized = false;
         bot.answerCallbackQuery(query.id, { text: "Declined" });
         bot.editMessageText("🚨 ВХОД ОТКЛОНЕН ❌", {
             chat_id: adminChatId,
